@@ -1,0 +1,245 @@
+{
+	"info": {
+		"_postman_id": "d341d5f2-d682-44be-af10-9c3cf58a3569",
+		"name": "todo-application Copy",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "mutation",
+			"item": [
+				{
+					"name": "mutation createUser",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"if createUser API creates a valid user\", function() {",
+									"    const response = JSON.parse(responseBody);",
+									"    pm.expect(response.errors).to.be.undefined",
+									"    const jsonData = JSON.parse(responseBody)",
+									"    postman.setEnvironmentVariable(\"user_id\", jsonData.data.createUser.id)",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "0123456789",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation CreateUser($createUserInput: CreateUserRequest!) {\n  createUser(input: $createUserInput) {\n    id\n    name\n    userRef\n  }\n}\n",
+								"variables": "{\n  \"createUserInput\": {\n      \"name\": \"Mac\",\n      \"userRef\": \"mac-123\"\n  }\n}\n"
+							}
+						},
+						"url": {
+							"raw": "{{graphql_url}}",
+							"host": [
+								"{{graphql_url}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "mutation createList",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"if createList API creates a valid list\", function() {",
+									"    const response = JSON.parse(responseBody);",
+									"    pm.expect(response.errors).to.be.undefined",
+									"    const jsonData = JSON.parse(responseBody)",
+									"    pm.expect(jsonData.data.createList.userId).to.be.equal(parseInt(pm.environment.get(\"user_id\"), 10));",
+									"    postman.setEnvironmentVariable(\"list_id\", jsonData.data.createList.id)",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "0123456789",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation CreateList($createListInput: CreateListRequest!) {\n  createList(input: $createListInput) {\n    id\n    name\n    userId\n  }\n}\n",
+								"variables": "{\n  \"createListInput\": {\n      \"name\": \"House chores\",\n      \"userId\": {{user_id}}\n  }\n}\n"
+							}
+						},
+						"url": {
+							"raw": "{{graphql_url}}",
+							"host": [
+								"{{graphql_url}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "mutation createNote",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"if createNote API creates a valid note\", function() {",
+									"    const response = JSON.parse(responseBody);",
+									"    pm.expect(response.errors).to.be.undefined",
+									"    const jsonData = JSON.parse(responseBody)",
+									"    pm.expect(jsonData.data.createNote.listId).to.be.equal(pm.environment.get(\"list_id\"));",
+									"    pm.expect(jsonData.data.createNote.done).to.be.equal(false);",
+									"    pm.expect(jsonData.data.createNote.note).to.be.equal(\"Mow the lawn\");",
+									"    pm.expect(jsonData.data.createNote.deadline).to.be.equal('2021-01-01T00:00:00Z');",
+									"    postman.setEnvironmentVariable(\"note_id\", jsonData.data.createNote.id)",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "0123456789",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation CreateNote($createNoteInput: CreateNoteRequest!) {\n  createNote(input: $createNoteInput) {\n    id\n    note\n    listId\n    deadline\n    done\n  }\n}\n",
+								"variables": "{\n  \"createNoteInput\": {\n      \"note\": \"Mow the lawn\",\n      \"listId\": {{list_id}},\n      \"deadline\": \"2021-01-01T00:00:00.000Z\"\n  }\n}\n"
+							}
+						},
+						"url": {
+							"raw": "{{graphql_url}}",
+							"host": [
+								"{{graphql_url}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "query",
+			"item": [
+				{
+					"name": "query notes",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"if queryNotes API returns the correct note and associated data\", function() {",
+									"    const response = JSON.parse(responseBody);",
+									"    pm.expect(response.errors).to.be.undefined",
+									"    const jsonData = JSON.parse(responseBody)",
+									"    const notes = jsonData.data.notes;",
+									"    pm.expect(notes.items.length).to.be.equal(1);",
+									"    pm.expect(notes.items[0].id).to.be.equal(pm.environment.get(\"note_id\"));",
+									"    pm.expect(notes.items[0].note).to.be.equal(\"Mow the lawn\");",
+									"    pm.expect(notes.items[0].done).to.be.equal(false);",
+									"    pm.expect(notes.items[0].deadline).to.be.equal(\"2021-01-01T00:00:00.000Z\");",
+									"    pm.expect(notes.items[0].listId).to.be.equal(pm.environment.get(\"list_id\"));",
+									"",
+									"    pm.expect(notes.items[0].list.id).to.be.equal(pm.environment.get(\"list_id\"));",
+									"",
+									"    pm.expect(notes.items[0].list.user.id).to.be.equal(pm.environment.get(\"user_id\"));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "0123456789",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "query Notes($notesPagination: PaginationInput!, $notesWhere: AWSJSON) {\n  notes(pagination: $notesPagination, where: $notesWhere) {\n    items {\n      id\n      note\n      listId\n      done\n      deadline\n      list {\n        id\n        name\n        user {\n            id\n            name\n            userRef\n        }\n      }\n    }\n  }\n}\n",
+								"variables": "{\n  \"notesPagination\": {\n      \"limit\": 10,\n      \"offset\": 0\n  },\n  \"notesWhere\": \"{\\\"id\\\":{\\\"eq\\\":{{note_id}}}}\"\n}\n"
+							}
+						},
+						"url": {
+							"raw": "{{graphql_url}}",
+							"host": [
+								"{{graphql_url}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "apikey",
+		"apikey": [
+			{
+				"key": "value",
+				"value": "{{x-api-key}}",
+				"type": "string"
+			},
+			{
+				"key": "key",
+				"value": "x-api-key",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
